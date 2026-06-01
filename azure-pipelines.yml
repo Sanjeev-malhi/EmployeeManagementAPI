@@ -7,37 +7,75 @@ pool:
 variables:
   buildConfiguration: 'Release'
 
-steps:
+stages:
 
-- task: UseDotNet@2
-  displayName: 'Install .NET SDK'
-  inputs:
-    packageType: 'sdk'
-    version: '8.x'
+- stage: Build
+  displayName: 'Build Stage'
 
-- task: DotNetCoreCLI@2
-  displayName: 'Restore Packages'
-  inputs:
-    command: 'restore'
-    projects: '**/*.csproj'
+  jobs:
+  - job: BuildJob
 
-- task: DotNetCoreCLI@2
-  displayName: 'Build Project'
-  inputs:
-    command: 'build'
-    projects: '**/*.csproj'
-    arguments: '--configuration $(buildConfiguration)'
+    steps:
 
-- task: DotNetCoreCLI@2
-  displayName: 'Publish Project'
-  inputs:
-    command: 'publish'
-    publishWebProjects: true
-    arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
-    zipAfterPublish: true
+    - task: UseDotNet@2
+      displayName: 'Install .NET SDK'
+      inputs:
+        packageType: 'sdk'
+        version: '8.x'
 
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact'
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'drop'
+    - task: DotNetCoreCLI@2
+      displayName: 'Restore Packages'
+      inputs:
+        command: 'restore'
+        projects: '**/*.csproj'
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Build Project'
+      inputs:
+        command: 'build'
+        projects: '**/*.csproj'
+        arguments: '--configuration $(buildConfiguration)'
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Publish Project'
+      inputs:
+        command: 'publish'
+        publishWebProjects: true
+        arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+        zipAfterPublish: true
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+
+- stage: DeployDev
+  displayName: 'Deploy To Dev'
+  dependsOn: Build
+
+  jobs:
+  - deployment: DeploymentWebApp
+    environment: Development
+
+    strategy:
+      runOnce:
+
+        deploy:
+
+          steps:
+
+          - task: DownloadBuildArtifacts@1
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: 'drop'
+              downloadPath: '$(System.ArtifactsDirectory)'
+
+          - task: AzureWebApp@1
+            displayName: 'Deploy To Azure App Service'
+            inputs:
+              azureSubscription: 'employee-api-dev-connection'
+              appType: 'webApp'
+              appName: 'employee-api-dev'
+              package: '$(System.ArtifactsDirectory)/drop/**/*.zip'
