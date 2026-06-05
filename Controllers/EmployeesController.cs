@@ -9,15 +9,28 @@ namespace EmployeeManagementAPI.Controllers;
 [Route("api/[controller]")]
 public class EmployeesController : ControllerBase
 {
+    private readonly ApplicationDbContext _context;
+
+    public EmployeesController(ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetEmployees()
     {
-        return Ok("This will be used to get the employees");
+        var employees = await _context.Employees.ToListAsync();
+
+        return Ok(employees);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create(Employee employee)
     {
-        return Ok("This will be used to Add new employees");
+        _context.Employees.Add(employee);
+
+        await _context.SaveChangesAsync();
+
+        return Ok(employee);
     }
 }

@@ -17,6 +17,11 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 
+app.MapGet("/", () =>
+{
+    return "Welcome to Employee Management API";
+});
+
 app.MapGet("/environment", (IWebHostEnvironment env) =>
 {
     return env.EnvironmentName;
