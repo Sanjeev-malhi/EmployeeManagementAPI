@@ -1,4 +1,3 @@
-using EmployeeManagementAPI.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace EmployeeManagementAPI.Data;
@@ -11,4 +10,5 @@ public class ApplicationDbContext : DbContext
     }
 
     public DbSet<Employee> Employees => Set<Employee>();
+    public DbSet<Department> Departments => Set<Department>();
 }

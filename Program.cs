@@ -14,6 +14,18 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider
+        .GetRequiredService<ApplicationDbContext>();
+    var pending = dbContext.Database
+        .GetPendingMigrations();
+    if (pending.Any())
+    {
+        dbContext.Database.Migrate();
+    }
+}
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
