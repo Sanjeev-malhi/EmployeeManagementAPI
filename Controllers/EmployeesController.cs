@@ -1,6 +1,6 @@
-using EmployeeManagementAPI.Data;
+using EmployeeManagementAPI.DTOs;
+using EmployeeManagementAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace EmployeeManagementAPI.Controllers;
 
@@ -8,28 +8,49 @@ namespace EmployeeManagementAPI.Controllers;
 [Route("api/[controller]")]
 public class EmployeesController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IEmployeeService _service;
 
-    public EmployeesController(ApplicationDbContext context)
+    public EmployeesController(
+        IEmployeeService service)
     {
-        _context = context;
+        _service = service;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetEmployees()
     {
-        var employees = await _context.Employees.ToListAsync();
+        var employees =
+            await _service.GetEmployeesAsync();
 
         return Ok(employees);
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(Employee employee)
+    public async Task<IActionResult> Create(
+        CreateEmployeeDto dto)
     {
-        _context.Employees.Add(employee);
+        var employee =
+            await _service.CreateEmployeeAsync(dto);
 
-        await _context.SaveChangesAsync();
+        return CreatedAtAction(
+            nameof(GetEmployees),
+            new { id = employee.Id },
+            employee);
+    }
 
-        return Ok(employee);
+    [HttpPost("{id}/upload-photo")]
+    public async Task<IActionResult> UploadPhoto(
+    int id,
+    IFormFile file)
+    {
+        var photoUrl =
+            await _service.UploadPhotoAsync(
+                id,
+                file);
+
+        return Ok(new
+        {
+            PhotoUrl = photoUrl
+        });
     }
 }

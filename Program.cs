@@ -1,7 +1,19 @@
+using EmployeeManagementAPI.Configurations;
 using EmployeeManagementAPI.Data;
+using EmployeeManagementAPI.Repositories;
+using EmployeeManagementAPI.Repositories.Interfaces;
+using EmployeeManagementAPI.Services;
+using EmployeeManagementAPI.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Azure.Identity;
+
 
 var builder = WebApplication.CreateBuilder(args);
+if (!builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddAzureKeyVault(
+        new Uri("https://employeekv.vault.azure.net/"), new DefaultAzureCredential());
+}
 
 builder.Services.AddControllers();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -10,6 +22,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
+builder.Services.Configure<AzureStorageSettings>(builder.Configuration.GetSection("AzureStorage"));
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
