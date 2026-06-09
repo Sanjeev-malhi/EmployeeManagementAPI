@@ -12,7 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 if (!builder.Environment.IsDevelopment())
 {
     builder.Configuration.AddAzureKeyVault(
-        new Uri("https://employeekv.vault.azure.net/"), new DefaultAzureCredential());
+        new Uri("https://employeekv.vault.azure.net/"), new ManagedIdentityCredential());
 }
 
 builder.Services.AddControllers();
