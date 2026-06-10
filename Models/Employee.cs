@@ -33,4 +33,6 @@ public class Employee
     public int DepartmentId { get; set; }
 
     public Department Department { get; set; }
+
+    public string? Designation { get; set; }
 }
