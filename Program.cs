@@ -16,11 +16,6 @@ if (!builder.Environment.IsDevelopment())
 }
 
 builder.Services.AddControllers();
-Console.WriteLine("Environment: " + builder.Environment.EnvironmentName);
-
-Console.WriteLine(
-    "Connection String = " +
-    builder.Configuration.GetConnectionString("DefaultConnection"));
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     options.UseSqlServer(
@@ -35,17 +30,17 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-//using (var scope = app.Services.CreateScope())
-//{
-//    var dbContext = scope.ServiceProvider
-//        .GetRequiredService<ApplicationDbContext>();
-//    var pending = dbContext.Database
-//        .GetPendingMigrations();
-//    if (pending.Any())
-//    {
-//        dbContext.Database.Migrate();
-//    }
-//}
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider
+        .GetRequiredService<ApplicationDbContext>();
+    var pending = dbContext.Database
+        .GetPendingMigrations();
+    if (pending.Any())
+    {
+        dbContext.Database.Migrate();
+    }
+}
 
 app.UseSwagger();
 app.UseSwaggerUI();
