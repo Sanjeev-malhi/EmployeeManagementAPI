@@ -25,6 +25,12 @@ public class EmployeesController : ControllerBase
         return Ok(employees);
     }
 
+    [HttpGet("test")]
+    public IActionResult Test()
+    {
+        return Ok("API works");
+    }
+
     [HttpPost]
     public async Task<IActionResult> Create(
         CreateEmployeeDto dto)
